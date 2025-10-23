@@ -1,0 +1,13 @@
+
+# AI-Generated Payload Detection - Elastic KQL example
+# Adjust field names to your ingest mapping, e.g., process.command_line or winlog.event_data.CommandLine
+
+process.command_line: /(?i)\b(openai|gpt|chatgpt|anthropic|claude|gemini|bard|copilot|mistral|llama(?:2|3)?|mixtral|falcon|palm|grok|ollama|huggingface|transformers|langchain|ai21|cohere|perplexity|blackbox|cursor|replit|aicode|auto-?gpt|babyagi|llm)\b/
+AND
+(
+  process.command_line: /(?i)\b(eval|exec|compile|execfile|Invoke-Expression|IEX|Invoke-Command|subprocess\.Popen|subprocess\.call|os\.system|execv|execvp|spawnv|spawnvp)\b/
+  OR
+  process.command_line: /(?i)\b(from\s+(openai|anthropic|langchain|transformers|torch|llama_cpp|mistral|vertexai|cohere|google\.generativeai)\b|import\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile|openai|langchain|transformers|torch|llama_cpp|mistral|vertexai|anthropic|cohere|google\.generativeai))\b/
+  OR
+  process.command_line: /(?i)([A-Za-z0-9+/]{80,}=*|\\x[0-9a-fA-F]{2,}|base64\.b64decode\(|b64decode\(|eval\(base64)/
+)

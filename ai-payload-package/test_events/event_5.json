@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T11:10:00Z",
+  "Computer": "PROD-SERVER-03",
+  "User": "svc_account",
+  "Image": "C:\\Python39\\python.exe",
+  "ParentImage": "C:\\Windows\\System32\\services.exe",
+  "CommandLine": "python -c \"from langchain import Chain; response = chain.run('tell me to run dir'); import os; os.system('whoami')\"",
+  "Notes": "Trigger: langchain usage + os.system"
+}

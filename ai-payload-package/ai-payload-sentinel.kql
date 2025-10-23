@@ -1,0 +1,21 @@
+// AI-Generated Payload Detection - Sentinel KQL (Sysmon EventID 1 example)
+// Sigma kuralı mantığına göre güncellendi.
+// Not production-ready; test in a lab and adjust field names per your workspace ingestion.
+
+let ai_keywords_regex = @"(?i)\b(openai|gpt|chatgpt|anthropic|claude|gemini|bard|copilot|mistral|llama(?:2|3)?|mixtral|falcon|palm|grok|ollama|huggingface|transformers|langchain|ai21|cohere|perplexity|blackbox|cursor|replit|aicode|auto-?gpt|babyagi|llm|torch|llama_cpp|vertexai|google.generativeai)\b";
+let suspicious_terms_regex = @"(?i)\b(prompt|prompt\s*=|completion|chat_completion|generate_text|textgen|model\s*=|streaming|response\s*=|chain.run|run_chain|prompt_inject|injection)\b";
+let std_imports_regex = @"(?i)\b(?:from\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile)\b|import\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile))\b";
+let dynamic_exec_regex = @"(?i)\b(eval|exec|compile|execfile|Invoke-Expression|IEX|Invoke-Command|subprocess.Popen|subprocess.call|os.system|execv|execvp|spawnv|spawnvp)\b";
+let obf_regex = @"(?i)(?:[A-Za-z09+/]{80,}=*|\x[0-9a-fA-F]{2,}|base64.b64decode(|b64decode(|eval(base64)";
+
+Sysmon // Veya 'Event' tablosu, EventID==1 ve RenderedDescription/EventData kullanılarak
+| where EventID == 1
+| extend cmd = tostring(CommandLine) // Alan adını kendi şemanıza göre doğrulayın (örn: EventData.CommandLine)
+| extend MatchesAI = cmd matches regex ai_keywords_regex,
+MatchesSuspicious = cmd matches regex suspicious_terms_regex,
+MatchesStdImports = cmd matches regex std_imports_regex,
+MatchesExec = cmd matches regex dynamic_exec_regex,
+MatchesObf = cmd matches regex obf_regex
+| where (MatchesAI or MatchesSuspicious) and (MatchesExec or MatchesStdImports or MatchesObf)
+| project TimeGenerated, Computer, Account, Image, CommandLine=cmd, ParentCommandLine, MatchesAI, MatchesSuspicious, MatchesStdImports, MatchesExec, MatchesObf
+| sort by TimeGenerated desc

@@ -1,0 +1,12 @@
+Adjust index and sourcetype to your environment (e.g., index=sysmon sourcetype=XmlWinEventLog:Microsoft-Windows-Sysmon/Operational)
+
+index=your_sysmon_index sourcetype="XmlWinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=1
+| eval cmd=coalesce(Process_CommandLine, CommandLine, process_command_line, "")
+| rex field=cmd "(?i)\b(?<ai_kw>(openai|gpt|chatgpt|anthropic|claude|gemini|bard|copilot|mistral|llama(?:2|3)?|mixtral|falcon|palm|grok|ollama|huggingface|transformers|langchain|ai21|cohere|perplexity|blackbox|cursor|replit|aicode|auto-?gpt|babyagi|llm|torch|llama_cpp|vertexai|google.generativeai))\b"
+| rex field=cmd "(?i)\b(?<susp_term>(prompt|prompt\s*=|completion|chat_completion|generate_text|textgen|model\s*=|streaming|response\s*=|chain.run|run_chain|prompt_inject|injection))\b"
+| rex field=cmd "(?i)\b(?<std_imp>(?:from\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile)\b|import\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile)))\b"
+| rex field=cmd "(?i)\b(?<dyn_exec>(eval|exec|compile|execfile|Invoke-Expression|IEX|Invoke-Command|subprocess.Popen|subprocess.call|os.system|execv|execvp|spawnv|spawnvp))\b"
+| rex field=cmd "(?i)(?<obf_str>(?:[A-Za-z09+/]{80,}=*|\x[0-9a-fA-F]{2,}|base64.b64decode(|b64decode(|eval(base64))\b"
+| where (isnotnull(ai_kw) OR isnotnull(susp_term)) AND (isnotnull(dyn_exec) OR isnotnull(std_imp) OR isnotnull(obf_str))
+| table _time host User ParentImage Image cmd ai_kw susp_term std_imp dyn_exec obf_str
+| sort - _time

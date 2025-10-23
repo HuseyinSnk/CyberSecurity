@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T10:05:00Z",
+  "Computer": "ML-DEV-01",
+  "User": "mluser",
+  "Image": "C:\\Python39\\python.exe",
+  "ParentImage": "C:\\Program Files\\JetBrains\\pycharm.exe",
+  "CommandLine": "python -c \"from openai import OpenAI; print('test')\"",
+  "Notes": "Developer explicitly using openai library (likely benign dev host)"
+}

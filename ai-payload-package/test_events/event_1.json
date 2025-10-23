@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T10:00:00Z",
+  "Computer": "DEV-LAPTOP-01",
+  "User": "devuser",
+  "Image": "C:\\Python39\\python.exe",
+  "ParentImage": "C:\\Windows\\explorer.exe",
+  "CommandLine": "python -c \"import requests; print('hello world')\"",
+  "Notes": "Benign developer using requests"
+}

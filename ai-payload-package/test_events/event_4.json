@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T11:05:00Z",
+  "Computer": "PROD-SERVER-02",
+  "User": "svc_account",
+  "Image": "C:\\Python39\\python.exe",
+  "ParentImage": "C:\\Windows\\System32\\services.exe",
+  "CommandLine": "python -c \"import openai, base64; exec(base64.b64decode('cHJpbnQoJ0ZhbHNlJyk='))\"",
+  "Notes": "Trigger: openai import + base64 exec (suspicious)"
+}

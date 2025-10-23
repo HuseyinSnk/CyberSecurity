@@ -1,0 +1,70 @@
+title: AI-Generated Payload Detection
+id: 9d2c3e7a-6b4f-48a2-8f7d-2b5c6e1f9aa1
+status: experimental
+description: >
+  Detects scripts and commands that likely were generated or augmented by Large Language Models (LLMs)
+  or AI APIs. This rule correlates AI provider/library keywords with suspicious dynamic execution
+  constructs, standard library imports, or obfuscated strings.
+author: HsynSnk
+date: 2025-10-23
+references:
+  - https://github.com/SigmaHQ/sigma
+tags:
+  - attack.execution
+  - detection.ai-assisted
+  - T1059
+logsource:
+  product: windows
+  service: sysmon
+  category: process_creation
+detection:
+  # AI ile ilgili anahtar kelimeler: Kütüphaneler, sağlayıcılar ve modeller
+  ai_keywords:
+    CommandLine|re: '(?i)\b(openai|gpt|chatgpt|anthropic|claude|gemini|bard|copilot|mistral|llama(?:2|3)?|mixtral|falcon|palm|grok|ollama|huggingface|transformers|langchain|ai21|cohere|perplexity|blackbox|cursor|replit|aicode|auto-?gpt|babyagi|llm|torch|llama_cpp|vertexai|google\.generativeai)\b'
+  
+  # AI API'leri veya araçlarıyla yaygın olarak kullanılan terimler
+  suspicious_terms:
+    CommandLine|re: '(?i)\b(prompt|prompt\s*=|completion|chat_completion|generate_text|textgen|model\s*=|streaming|response\s*=|chain\.run|run_chain|prompt_inject|injection)\b'
+  
+  # Tehlikeli olabilecek standart Python kütüphaneleri
+  suspicious_std_imports:
+    CommandLine|re: '(?i)\b(?:from\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile)\b|import\s+(os|sys|subprocess|platform|socket|requests|urllib|aiohttp|httpx|json|base64|pickle|re|time|shutil|tempfile))\b'
+  
+  # Dinamik kod çalıştırma veya komut çağırma fonksiyonları
+  dynamic_exec:
+    CommandLine|re: '(?i)\b(eval|exec|compile|execfile|Invoke-Expression|IEX|Invoke-Command|subprocess\.Popen|subprocess\.call|os\.system|execv|execvp|spawnv|spawnvp)\b'
+  
+  # Uzun Base64 dizileri veya diğer gizleme (obfuscation) belirtileri
+  obfuscated_strings:
+    CommandLine|re: '(?i)(?:[A-Za-z09+/]{80,}=*|\\x[0-9a-fA-F]{2,}|base64\\.b64decode\\(|b64decode\\(|eval\\(base64)'
+  
+  # Koşul: (Bir AI terimi VEYA AI ile ilgili bir terim) VE (Dinamik çalıştırma VEYA Şüpheli import VEYA Gizlenmiş string)
+  condition: >
+    (
+      (ai_keywords or suspicious_terms)
+      and
+      (dynamic_exec or suspicious_std_imports or obfuscated_strings)
+    )
+  timeframe: 1h
+fields:
+  - CommandLine
+  - Image
+  - ParentImage
+  - ParentCommandLine
+  - User
+  - Computer
+level: medium
+falsepositives:
+  - Developer machines or CI/CD runners executing legitimate AI tests (langchain, transformers, openai SDKs).
+  - Data science / ML notebook activity where model libs and exec-like patterns are used for benign experimentation.
+falsepositives_tuning: |
+  - Whitelist known developer/CI hosts (by Image, ParentImage, User or Computer).
+  - Exclude signed vendor binaries and managed service accounts.
+  - Require correlation with unexpected outbound network activity (unknown domains/IPs) for higher confidence.
+programs:
+  - sysmon
+  - windows-event-logs
+level_mapping:
+  low: 1
+  medium: 2
+  high: 3

@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T11:20:00Z",
+  "Computer": "CI-RUNNER-01",
+  "User": "ci_user",
+  "Image": "C:\\Python39\\python.exe",
+  "ParentImage": "C:\\Program Files\\GitLab Runner\\gitlab-runner.exe",
+  "CommandLine": "python -c \"import transformers; print('training')\"",
+  "Notes": "Benign CI job using transformers (false positive candidate)"
+}

